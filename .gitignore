@@ -1,0 +1,28 @@
+﻿# Build outputs
+bin/
+obj/
+dist/
+
+# .NET
+*.user
+*.suo
+.vs/
+
+# Rider/JetBrains
+.idea/
+
+# User data & secrets (never commit)
+*.db
+*.db-wal
+*.db-shm
+appsettings.local.json
+*.pfx
+*.p12
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Logs
+*.log

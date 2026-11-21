@@ -1,0 +1,8 @@
+$env:DOTNET_ROOT = "C:\Users\abdel\.gemini\antigravity\scratch\dotnet"
+$env:PATH = "$env:DOTNET_ROOT;$env:PATH"
+$env:DOTNET_CLI_HOME = "C:\Users\abdel\.gemini\antigravity\scratch\.dotnet_cli"
+$env:NUGET_PACKAGES = "C:\Users\abdel\.gemini\antigravity\scratch\.nuget_packages"
+$env:APPDATA = "C:\Users\abdel\.gemini\antigravity\scratch\.appdata"
+$env:LOCALAPPDATA = "C:\Users\abdel\.gemini\antigravity\scratch\.localappdata"
+$env:DOTNET_NOLOGO = "1"
+$env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
