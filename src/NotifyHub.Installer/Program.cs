@@ -363,12 +363,41 @@ namespace NotifyHub.Installer
 
             Log("Files unpacked successfully.");
 
+            // Extract application icon directly to folder for crisp Windows shortcut & tray binding
+            try
+            {
+                using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("AppIcon.ico"))
+                {
+                    if (s != null)
+                    {
+                        string destIco = Path.Combine(targetDir, "notifyhub.ico");
+                        using (FileStream fs = new FileStream(destIco, FileMode.Create, FileAccess.Write))
+                        {
+                            s.CopyTo(fs);
+                        }
+                        Log("Extracted notifyhub.ico to: " + destIco);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("Icon extraction warning: " + ex.Message);
+            }
+
             if (reportProgress != null) reportProgress("Creating shortcuts...");
             string exePath = Path.Combine(targetDir, "NotifyHub.exe");
             string desktopDir = createDesktop ? Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) : null;
             string programsDir = createStartMenu ? Environment.GetFolderPath(Environment.SpecialFolder.Programs) : null;
 
             CreateShortcutsWithVbs(desktopDir, programsDir, exePath, targetDir);
+
+            // Notify Windows shell to immediately refresh icon cache
+            try
+            {
+                SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
+                Log("Windows shell icon cache refreshed.");
+            }
+            catch { }
 
             // Create uninstaller
             try
@@ -399,10 +428,16 @@ namespace NotifyHub.Installer
             Log("Installation completed successfully.");
         }
 
+        [System.Runtime.InteropServices.DllImport("shell32.dll")]
+        private static extern void SHChangeNotify(int wEventId, int uFlags, IntPtr dwItem1, IntPtr dwItem2);
+
         private static void CreateShortcutsWithVbs(string desktopDir, string programsDir, string exePath, string workingDir)
         {
             try
             {
+                string iconTarget = Path.Combine(workingDir, "notifyhub.ico");
+                string iconLocation = iconTarget + ",0";
+
                 string vbsPath = Path.Combine(Path.GetTempPath(), "nh_shortcuts_" + Guid.NewGuid().ToString("N") + ".vbs");
                 using (StreamWriter sw = new StreamWriter(vbsPath, false, System.Text.Encoding.ASCII))
                 {
@@ -413,7 +448,7 @@ namespace NotifyHub.Installer
                         sw.WriteLine(string.Format("Set s1 = ws.CreateShortcut(\"{0}\")", lnk.Replace("\"", "\"\"")));
                         sw.WriteLine(string.Format("s1.TargetPath = \"{0}\"", exePath.Replace("\"", "\"\"")));
                         sw.WriteLine(string.Format("s1.WorkingDirectory = \"{0}\"", workingDir.Replace("\"", "\"\"")));
-                        sw.WriteLine(string.Format("s1.IconLocation = \"{0},0\"", exePath.Replace("\"", "\"\"")));
+                        sw.WriteLine(string.Format("s1.IconLocation = \"{0}\"", iconLocation.Replace("\"", "\"\"")));
                         sw.WriteLine("s1.Description = \"Notify Hub — Native Windows Notification Manager\"");
                         sw.WriteLine("s1.Save");
                     }
@@ -423,7 +458,7 @@ namespace NotifyHub.Installer
                         sw.WriteLine(string.Format("Set s2 = ws.CreateShortcut(\"{0}\")", lnk.Replace("\"", "\"\"")));
                         sw.WriteLine(string.Format("s2.TargetPath = \"{0}\"", exePath.Replace("\"", "\"\"")));
                         sw.WriteLine(string.Format("s2.WorkingDirectory = \"{0}\"", workingDir.Replace("\"", "\"\"")));
-                        sw.WriteLine(string.Format("s2.IconLocation = \"{0},0\"", exePath.Replace("\"", "\"\"")));
+                        sw.WriteLine(string.Format("s2.IconLocation = \"{0}\"", iconLocation.Replace("\"", "\"\"")));
                         sw.WriteLine("s2.Description = \"Notify Hub — Native Windows Notification Manager\"");
                         sw.WriteLine("s2.Save");
                     }

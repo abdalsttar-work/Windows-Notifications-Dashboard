@@ -31,6 +31,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        try
+        {
+            Icon = System.Windows.Media.Imaging.BitmapFrame.Create(
+                new Uri("pack://application:,,,/Assets/notifyhub.ico", UriKind.RelativeOrAbsolute));
+        }
+        catch { }
+
         _secureStorage = new WindowsCredentialManagerService();
         _databaseService = new SqliteDatabaseService(_secureStorage);
         _categorizationService = new SmartCategorizationService(_databaseService);
@@ -123,7 +130,28 @@ public partial class MainWindow : Window
             if (resourceInfo?.Stream != null)
             {
                 using var stream = resourceInfo.Stream;
-                return new Icon(stream);
+                return new Icon(stream, 16, 16);
+            }
+        }
+        catch { }
+
+        try
+        {
+            string localIco = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "notifyhub.ico");
+            if (System.IO.File.Exists(localIco))
+            {
+                return new Icon(localIco, 16, 16);
+            }
+        }
+        catch { }
+
+        try
+        {
+            string? procPath = Environment.ProcessPath;
+            if (!string.IsNullOrEmpty(procPath) && System.IO.File.Exists(procPath))
+            {
+                var ico = System.Drawing.Icon.ExtractAssociatedIcon(procPath);
+                if (ico != null) return ico;
             }
         }
         catch { }

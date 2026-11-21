@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 
 namespace NotifyHub;
@@ -9,6 +10,20 @@ namespace NotifyHub;
 /// </summary>
 public partial class App : System.Windows.Application
 {
+    [DllImport("shell32.dll", SetLastError = true)]
+    private static extern void SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string AppID);
+
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        try
+        {
+            SetCurrentProcessExplicitAppUserModelID("NotifyHub.WindowsNotificationManager");
+        }
+        catch { }
+
+        base.OnStartup(e);
+    }
+
     public static void ApplyTheme(string? theme)
     {
         try
