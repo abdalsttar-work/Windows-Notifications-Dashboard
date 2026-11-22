@@ -10,7 +10,9 @@
         Height="840" Width="1340"
         MinHeight="680" MinWidth="1050"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource WindowBackgroundBrush}">
+        Background="{DynamicResource WindowBackgroundBrush}"
+        PreviewKeyDown="Window_PreviewKeyDown"
+        PreviewMouseWheel="Window_PreviewMouseWheel">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -22,7 +24,10 @@
         <conv:SourceAccentBrushConverter x:Key="SourceAccentBrush" />
     </Window.Resources>
 
-    <Grid>
+    <Grid x:Name="RootLayoutGrid">
+        <Grid.LayoutTransform>
+            <ScaleTransform ScaleX="{Binding ZoomScale}" ScaleY="{Binding ZoomScale}" />
+        </Grid.LayoutTransform>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -102,6 +107,24 @@
 
                     <Button x:Name="BtnAnalyticsToggle" Content="📊 Analytics" Style="{DynamicResource OutlineButton}"
                             Click="BtnAnalyticsToggle_Click" Margin="0,0,8,0" ToolTip="Open Advanced Analytics &amp; Charts Dashboard" />
+
+                    <!-- Zoom Controls (Ctrl + / Ctrl - / Ctrl 0 / Ctrl+Wheel) -->
+                    <Border CornerRadius="6" Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Margin="0,0,8,0" Padding="3,2">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Content="−" Style="{DynamicResource OutlineButton}" Command="{Binding ZoomOutCommand}"
+                                    BorderThickness="0" Padding="5,1" Margin="0" FontSize="13" FontWeight="Bold"
+                                    ToolTip="Zoom Out (Ctrl -)" />
+                            <TextBlock Text="{Binding ZoomPercentText}" VerticalAlignment="Center" Margin="4,0" FontSize="11.5" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" ToolTip="Current Zoom. Click to reset to 100% (Ctrl 0)" Cursor="Hand">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick" Command="{Binding ResetZoomCommand}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                            <Button Content="+" Style="{DynamicResource OutlineButton}" Command="{Binding ZoomInCommand}"
+                                    BorderThickness="0" Padding="5,1" Margin="0" FontSize="13" FontWeight="Bold"
+                                    ToolTip="Zoom In (Ctrl +)" />
+                        </StackPanel>
+                    </Border>
 
                     <Button x:Name="BtnSettingsToggle" Content="⚙️ Settings" Style="{DynamicResource ModernButton}" Click="BtnSettingsToggle_Click" />
                 </StackPanel>

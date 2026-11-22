@@ -184,6 +184,30 @@ public class MainViewModel : ViewModelBase
         }
     }
 
+    // Zoom Properties & Commands (Ctrl +, Ctrl -, Ctrl 0, Ctrl + MouseWheel)
+    public const double MinZoomScale = 0.70;
+    public const double MaxZoomScale = 1.80;
+    public const double ZoomStep = 0.10;
+
+    private double _zoomScale = 1.0;
+    public double ZoomScale
+    {
+        get => _zoomScale;
+        set
+        {
+            double clamped = Math.Clamp(Math.Round(value, 2), MinZoomScale, MaxZoomScale);
+            if (SetProperty(ref _zoomScale, clamped))
+            {
+                OnPropertyChanged(nameof(ZoomPercentText));
+                OnPropertyChanged(nameof(IsZoomed));
+                _ = SaveZoomPreferenceAsync();
+            }
+        }
+    }
+
+    public string ZoomPercentText => $"{Math.Round(_zoomScale * 100)}%";
+    public bool IsZoomed => Math.Abs(_zoomScale - 1.0) > 0.01;
+
     // Selected Notification & Details Panel
     private NotificationItem? _selectedNotification;
     public NotificationItem? SelectedNotification
@@ -262,6 +286,10 @@ public class MainViewModel : ViewModelBase
     public ICommand FirstPageCommand { get; }
     public ICommand LastPageCommand { get; }
 
+    public ICommand ZoomInCommand { get; }
+    public ICommand ZoomOutCommand { get; }
+    public ICommand ResetZoomCommand { get; }
+
     public MainViewModel(
         IDatabaseService databaseService,
         INotificationListenerService listenerService,
@@ -335,14 +363,45 @@ public class MainViewModel : ViewModelBase
         FirstPageCommand = new RelayCommand(() => { if (CurrentPage > 1) CurrentPage = 1; });
         LastPageCommand = new RelayCommand(() => { if (CurrentPage < TotalPages) CurrentPage = TotalPages; });
 
+        ZoomInCommand = new RelayCommand(() => ZoomScale = Math.Min(MaxZoomScale, Math.Round(ZoomScale + ZoomStep, 2)));
+        ZoomOutCommand = new RelayCommand(() => ZoomScale = Math.Max(MinZoomScale, Math.Round(ZoomScale - ZoomStep, 2)));
+        ResetZoomCommand = new RelayCommand(() => ZoomScale = 1.0);
+
         _listenerService.NotificationCaptured += ListenerService_NotificationCaptured;
         _listenerService.MonitoringStatusChanged += ListenerService_MonitoringStatusChanged;
     }
 
     public async Task InitializeAsync()
     {
+        try
+        {
+            var settings = await _databaseService.LoadSettingsAsync();
+            if (settings.ZoomScale >= MinZoomScale && settings.ZoomScale <= MaxZoomScale)
+            {
+                _zoomScale = settings.ZoomScale;
+                OnPropertyChanged(nameof(ZoomScale));
+                OnPropertyChanged(nameof(ZoomPercentText));
+                OnPropertyChanged(nameof(IsZoomed));
+            }
+        }
+        catch { }
+
         await LoadFilterOptionsAsync();
         await RefreshAllAsync();
+    }
+
+    private async Task SaveZoomPreferenceAsync()
+    {
+        try
+        {
+            var settings = await _databaseService.LoadSettingsAsync();
+            if (Math.Abs(settings.ZoomScale - _zoomScale) > 0.001)
+            {
+                settings.ZoomScale = _zoomScale;
+                await _databaseService.SaveSettingsAsync(settings);
+            }
+        }
+        catch { }
     }
 
     private async void ListenerService_NotificationCaptured(object? sender, NotificationItem e)

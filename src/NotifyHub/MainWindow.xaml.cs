@@ -166,6 +166,48 @@ public partial class MainWindow : Window
         Activate();
     }
 
+    private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+        {
+            // Zoom In: Ctrl + (OemPlus, Add)
+            if (e.Key == Key.OemPlus || e.Key == Key.Add)
+            {
+                MainVm.ZoomInCommand.Execute(null);
+                e.Handled = true;
+            }
+            // Zoom Out: Ctrl - (OemMinus, Subtract)
+            else if (e.Key == Key.OemMinus || e.Key == Key.Subtract)
+            {
+                MainVm.ZoomOutCommand.Execute(null);
+                e.Handled = true;
+            }
+            // Reset Zoom: Ctrl 0 (D0, NumPad0)
+            else if (e.Key == Key.D0 || e.Key == Key.NumPad0)
+            {
+                MainVm.ResetZoomCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+    }
+
+    private void Window_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    {
+        if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+        {
+            if (e.Delta > 0)
+            {
+                MainVm.ZoomInCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Delta < 0)
+            {
+                MainVm.ZoomOutCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+    }
+
     // Pressing Close (X) hides to System Tray when enabled; Minimize (_) minimizes normally to taskbar.
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {

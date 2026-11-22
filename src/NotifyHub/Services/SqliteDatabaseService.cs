@@ -908,6 +908,8 @@ public class SqliteDatabaseService : IDatabaseService
         if (dict.TryGetValue("Theme", out var th)) settings.Theme = th;
         if (dict.TryGetValue("DbBackupPath", out var dbp)) settings.DbBackupPath = dbp;
         if (dict.TryGetValue("RetentionDays", out var rd)) settings.RetentionDays = int.Parse(rd);
+        if (dict.TryGetValue("ZoomScale", out var zs) && double.TryParse(zs, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedZoom))
+            settings.ZoomScale = parsedZoom;
 
         if (dict.TryGetValue("ExcludedApps", out var ea)) settings.ExcludedApps = JsonSerializer.Deserialize<List<string>>(ea) ?? new();
         if (dict.TryGetValue("ExcludedCategories", out var ec)) settings.ExcludedCategories = JsonSerializer.Deserialize<List<string>>(ec) ?? new();
@@ -965,6 +967,7 @@ public class SqliteDatabaseService : IDatabaseService
             ["Theme"] = settings.Theme,
             ["DbBackupPath"] = settings.DbBackupPath,
             ["RetentionDays"] = settings.RetentionDays.ToString(),
+            ["ZoomScale"] = settings.ZoomScale.ToString(System.Globalization.CultureInfo.InvariantCulture),
             ["ExcludedApps"] = JsonSerializer.Serialize(settings.ExcludedApps),
             ["ExcludedCategories"] = JsonSerializer.Serialize(settings.ExcludedCategories),
             ["TelegramEnabled"] = settings.TelegramEnabled.ToString(),

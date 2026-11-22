@@ -21,6 +21,7 @@ public class AppSettings
     public string Theme { get; set; } = "Dark";
     public string DbBackupPath { get; set; } = string.Empty;
     public int RetentionDays { get; set; } = 0;
+    public double ZoomScale { get; set; } = 1.0;
 
     // Filters & Exclusions
     public List<string> ExcludedApps { get; set; } = new();

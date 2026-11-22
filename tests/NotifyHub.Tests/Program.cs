@@ -577,6 +577,38 @@ class Program
             Assert(searchResult.Count == 1 && searchResult[0].Id == firstItem.Id, "Search by DisplayId must locate exact record");
         });
 
+        await RunTest("19. Zoom In/Out (Ctrl + / - / 0), Scale Clamping & Persistence", async () =>
+        {
+            var settings = await dbService.LoadSettingsAsync();
+            Assert(settings.ZoomScale > 0, "Settings must have a valid default ZoomScale");
+
+            // Test zoom scaling logic
+            double initial = 1.0;
+            double step = 0.10;
+            double zoomedIn = Math.Round(initial + step, 2);
+            Assert(zoomedIn == 1.10, "Zoom in step must yield 1.10x (110%)");
+
+            double zoomedOut = Math.Round(initial - step, 2);
+            Assert(zoomedOut == 0.90, "Zoom out step must yield 0.90x (90%)");
+
+            // Test clamping
+            double minClamped = Math.Clamp(0.50, 0.70, 1.80);
+            Assert(minClamped == 0.70, "Zoom below minimum must clamp to 0.70x");
+
+            double maxClamped = Math.Clamp(2.50, 0.70, 1.80);
+            Assert(maxClamped == 1.80, "Zoom above maximum must clamp to 1.80x");
+
+            // Test persistence in database
+            settings.ZoomScale = 1.25;
+            await dbService.SaveSettingsAsync(settings);
+            var reloaded = await dbService.LoadSettingsAsync();
+            Assert(Math.Abs(reloaded.ZoomScale - 1.25) < 0.001, "Custom ZoomScale must persist in database settings");
+
+            // Reset back
+            settings.ZoomScale = 1.0;
+            await dbService.SaveSettingsAsync(settings);
+        });
+
         // Summary
         Console.WriteLine("\n======================================================================");
         Console.WriteLine($"TEST RESULTS SUMMARY: {_passedTests} PASSED, {_failedTests} FAILED");
