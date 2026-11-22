@@ -208,6 +208,80 @@ public class MainViewModel : ViewModelBase
     public string ZoomPercentText => $"{Math.Round(_zoomScale * 100)}%";
     public bool IsZoomed => Math.Abs(_zoomScale - 1.0) > 0.01;
 
+    // Column Visibility Properties & Commands
+    private bool _showColId = true;
+    public bool ShowColId
+    {
+        get => _showColId;
+        set { if (SetProperty(ref _showColId, value)) _ = SaveColumnVisibilityAsync(); }
+    }
+
+    private bool _showColSource = true;
+    public bool ShowColSource
+    {
+        get => _showColSource;
+        set { if (SetProperty(ref _showColSource, value)) _ = SaveColumnVisibilityAsync(); }
+    }
+
+    private bool _showColCategory = true;
+    public bool ShowColCategory
+    {
+        get => _showColCategory;
+        set { if (SetProperty(ref _showColCategory, value)) _ = SaveColumnVisibilityAsync(); }
+    }
+
+    private bool _showColTitle = true;
+    public bool ShowColTitle
+    {
+        get => _showColTitle;
+        set { if (SetProperty(ref _showColTitle, value)) _ = SaveColumnVisibilityAsync(); }
+    }
+
+    private bool _showColMessage = true;
+    public bool ShowColMessage
+    {
+        get => _showColMessage;
+        set { if (SetProperty(ref _showColMessage, value)) _ = SaveColumnVisibilityAsync(); }
+    }
+
+    private bool _showColReceived = true;
+    public bool ShowColReceived
+    {
+        get => _showColReceived;
+        set { if (SetProperty(ref _showColReceived, value)) _ = SaveColumnVisibilityAsync(); }
+    }
+
+    private bool _showColPending = true;
+    public bool ShowColPending
+    {
+        get => _showColPending;
+        set { if (SetProperty(ref _showColPending, value)) _ = SaveColumnVisibilityAsync(); }
+    }
+
+    private bool _showColPriority = true;
+    public bool ShowColPriority
+    {
+        get => _showColPriority;
+        set { if (SetProperty(ref _showColPriority, value)) _ = SaveColumnVisibilityAsync(); }
+    }
+
+    private bool _showColStatus = true;
+    public bool ShowColStatus
+    {
+        get => _showColStatus;
+        set { if (SetProperty(ref _showColStatus, value)) _ = SaveColumnVisibilityAsync(); }
+    }
+
+    private bool _showColActions = true;
+    public bool ShowColActions
+    {
+        get => _showColActions;
+        set { if (SetProperty(ref _showColActions, value)) _ = SaveColumnVisibilityAsync(); }
+    }
+
+    public ICommand ShowAllColumnsCommand { get; }
+    public ICommand ResetColumnsCommand { get; }
+
     // Selected Notification & Details Panel
     private NotificationItem? _selectedNotification;
     public NotificationItem? SelectedNotification
@@ -367,6 +441,9 @@ public class MainViewModel : ViewModelBase
         ZoomOutCommand = new RelayCommand(() => ZoomScale = Math.Max(MinZoomScale, Math.Round(ZoomScale - ZoomStep, 2)));
         ResetZoomCommand = new RelayCommand(() => ZoomScale = 1.0);
 
+        ShowAllColumnsCommand = new RelayCommand(() => SetAllColumnsVisible(true));
+        ResetColumnsCommand = new RelayCommand(() => SetAllColumnsVisible(true));
+
         _listenerService.NotificationCaptured += ListenerService_NotificationCaptured;
         _listenerService.MonitoringStatusChanged += ListenerService_MonitoringStatusChanged;
     }
@@ -383,11 +460,81 @@ public class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(ZoomPercentText));
                 OnPropertyChanged(nameof(IsZoomed));
             }
+
+            // Restore column preferences
+            _showColId = settings.ShowColId;
+            _showColSource = settings.ShowColSource;
+            _showColCategory = settings.ShowColCategory;
+            _showColTitle = settings.ShowColTitle;
+            _showColMessage = settings.ShowColMessage;
+            _showColReceived = settings.ShowColReceived;
+            _showColPending = settings.ShowColPending;
+            _showColPriority = settings.ShowColPriority;
+            _showColStatus = settings.ShowColStatus;
+            _showColActions = settings.ShowColActions;
+
+            OnPropertyChanged(nameof(ShowColId));
+            OnPropertyChanged(nameof(ShowColSource));
+            OnPropertyChanged(nameof(ShowColCategory));
+            OnPropertyChanged(nameof(ShowColTitle));
+            OnPropertyChanged(nameof(ShowColMessage));
+            OnPropertyChanged(nameof(ShowColReceived));
+            OnPropertyChanged(nameof(ShowColPending));
+            OnPropertyChanged(nameof(ShowColPriority));
+            OnPropertyChanged(nameof(ShowColStatus));
+            OnPropertyChanged(nameof(ShowColActions));
         }
         catch { }
 
         await LoadFilterOptionsAsync();
         await RefreshAllAsync();
+    }
+
+    private async Task SaveColumnVisibilityAsync()
+    {
+        try
+        {
+            var settings = await _databaseService.LoadSettingsAsync();
+            settings.ShowColId = _showColId;
+            settings.ShowColSource = _showColSource;
+            settings.ShowColCategory = _showColCategory;
+            settings.ShowColTitle = _showColTitle;
+            settings.ShowColMessage = _showColMessage;
+            settings.ShowColReceived = _showColReceived;
+            settings.ShowColPending = _showColPending;
+            settings.ShowColPriority = _showColPriority;
+            settings.ShowColStatus = _showColStatus;
+            settings.ShowColActions = _showColActions;
+            await _databaseService.SaveSettingsAsync(settings);
+        }
+        catch { }
+    }
+
+    private void SetAllColumnsVisible(bool visible)
+    {
+        _showColId = visible;
+        _showColSource = visible;
+        _showColCategory = visible;
+        _showColTitle = visible;
+        _showColMessage = visible;
+        _showColReceived = visible;
+        _showColPending = visible;
+        _showColPriority = visible;
+        _showColStatus = visible;
+        _showColActions = visible;
+
+        OnPropertyChanged(nameof(ShowColId));
+        OnPropertyChanged(nameof(ShowColSource));
+        OnPropertyChanged(nameof(ShowColCategory));
+        OnPropertyChanged(nameof(ShowColTitle));
+        OnPropertyChanged(nameof(ShowColMessage));
+        OnPropertyChanged(nameof(ShowColReceived));
+        OnPropertyChanged(nameof(ShowColPending));
+        OnPropertyChanged(nameof(ShowColPriority));
+        OnPropertyChanged(nameof(ShowColStatus));
+        OnPropertyChanged(nameof(ShowColActions));
+
+        _ = SaveColumnVisibilityAsync();
     }
 
     private async Task SaveZoomPreferenceAsync()

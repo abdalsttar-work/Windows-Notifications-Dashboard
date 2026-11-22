@@ -8,6 +8,20 @@ using MediaColor = System.Windows.Media.Color;
 
 namespace NotifyHub.Converters;
 
+public class BindingProxy : Freezable
+{
+    protected override Freezable CreateInstanceCore() => new BindingProxy();
+
+    public static readonly DependencyProperty DataProperty =
+        DependencyProperty.Register("Data", typeof(object), typeof(BindingProxy), new UIPropertyMetadata(null));
+
+    public object Data
+    {
+        get => GetValue(DataProperty);
+        set => SetValue(DataProperty, value);
+    }
+}
+
 public static class SourceColorPalette
 {
     private static readonly (byte R, byte G, byte B)[] Palette =

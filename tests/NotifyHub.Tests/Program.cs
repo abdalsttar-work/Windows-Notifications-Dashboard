@@ -609,6 +609,43 @@ class Program
             await dbService.SaveSettingsAsync(settings);
         });
 
+        await RunTest("20. Column Visibility Customization & Persistence", async () =>
+        {
+            var settings = await dbService.LoadSettingsAsync();
+            Assert(settings.ShowColId && settings.ShowColSource && settings.ShowColCategory &&
+                   settings.ShowColTitle && settings.ShowColMessage && settings.ShowColReceived &&
+                   settings.ShowColPending && settings.ShowColPriority && settings.ShowColStatus &&
+                   settings.ShowColActions, "All columns must default to visible (true)");
+
+            // Toggle specific columns off
+            settings.ShowColId = false;
+            settings.ShowColPending = false;
+            settings.ShowColCategory = false;
+            await dbService.SaveSettingsAsync(settings);
+
+            var reloaded = await dbService.LoadSettingsAsync();
+            Assert(!reloaded.ShowColId, "ShowColId must be false after persistence");
+            Assert(!reloaded.ShowColPending, "ShowColPending must be false after persistence");
+            Assert(!reloaded.ShowColCategory, "ShowColCategory must be false after persistence");
+            Assert(reloaded.ShowColSource, "ShowColSource must remain true");
+            Assert(reloaded.ShowColTitle, "ShowColTitle must remain true");
+            Assert(reloaded.ShowColMessage, "ShowColMessage must remain true");
+            Assert(reloaded.ShowColReceived, "ShowColReceived must remain true");
+            Assert(reloaded.ShowColPriority, "ShowColPriority must remain true");
+            Assert(reloaded.ShowColStatus, "ShowColStatus must remain true");
+            Assert(reloaded.ShowColActions, "ShowColActions must remain true");
+
+            // Reset back to all visible
+            settings.ShowColId = true;
+            settings.ShowColPending = true;
+            settings.ShowColCategory = true;
+            await dbService.SaveSettingsAsync(settings);
+
+            var resetReloaded = await dbService.LoadSettingsAsync();
+            Assert(resetReloaded.ShowColId && resetReloaded.ShowColPending && resetReloaded.ShowColCategory,
+                   "Columns must be restored to true after reset");
+        });
+
         // Summary
         Console.WriteLine("\n======================================================================");
         Console.WriteLine($"TEST RESULTS SUMMARY: {_passedTests} PASSED, {_failedTests} FAILED");

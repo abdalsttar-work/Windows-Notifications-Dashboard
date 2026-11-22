@@ -911,6 +911,18 @@ public class SqliteDatabaseService : IDatabaseService
         if (dict.TryGetValue("ZoomScale", out var zs) && double.TryParse(zs, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedZoom))
             settings.ZoomScale = parsedZoom;
 
+        // Column Visibility Preferences
+        if (dict.TryGetValue("ShowColId", out var scId) && bool.TryParse(scId, out bool bId)) settings.ShowColId = bId;
+        if (dict.TryGetValue("ShowColSource", out var scSrc) && bool.TryParse(scSrc, out bool bSrc)) settings.ShowColSource = bSrc;
+        if (dict.TryGetValue("ShowColCategory", out var scCat) && bool.TryParse(scCat, out bool bCat)) settings.ShowColCategory = bCat;
+        if (dict.TryGetValue("ShowColTitle", out var scTit) && bool.TryParse(scTit, out bool bTit)) settings.ShowColTitle = bTit;
+        if (dict.TryGetValue("ShowColMessage", out var scMsg) && bool.TryParse(scMsg, out bool bMsg)) settings.ShowColMessage = bMsg;
+        if (dict.TryGetValue("ShowColReceived", out var scRec) && bool.TryParse(scRec, out bool bRec)) settings.ShowColReceived = bRec;
+        if (dict.TryGetValue("ShowColPending", out var scPen) && bool.TryParse(scPen, out bool bPen)) settings.ShowColPending = bPen;
+        if (dict.TryGetValue("ShowColPriority", out var scPrio) && bool.TryParse(scPrio, out bool bPrio)) settings.ShowColPriority = bPrio;
+        if (dict.TryGetValue("ShowColStatus", out var scSta) && bool.TryParse(scSta, out bool bSta)) settings.ShowColStatus = bSta;
+        if (dict.TryGetValue("ShowColActions", out var scAct) && bool.TryParse(scAct, out bool bAct)) settings.ShowColActions = bAct;
+
         if (dict.TryGetValue("ExcludedApps", out var ea)) settings.ExcludedApps = JsonSerializer.Deserialize<List<string>>(ea) ?? new();
         if (dict.TryGetValue("ExcludedCategories", out var ec)) settings.ExcludedCategories = JsonSerializer.Deserialize<List<string>>(ec) ?? new();
 
@@ -968,6 +980,16 @@ public class SqliteDatabaseService : IDatabaseService
             ["DbBackupPath"] = settings.DbBackupPath,
             ["RetentionDays"] = settings.RetentionDays.ToString(),
             ["ZoomScale"] = settings.ZoomScale.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["ShowColId"] = settings.ShowColId.ToString(),
+            ["ShowColSource"] = settings.ShowColSource.ToString(),
+            ["ShowColCategory"] = settings.ShowColCategory.ToString(),
+            ["ShowColTitle"] = settings.ShowColTitle.ToString(),
+            ["ShowColMessage"] = settings.ShowColMessage.ToString(),
+            ["ShowColReceived"] = settings.ShowColReceived.ToString(),
+            ["ShowColPending"] = settings.ShowColPending.ToString(),
+            ["ShowColPriority"] = settings.ShowColPriority.ToString(),
+            ["ShowColStatus"] = settings.ShowColStatus.ToString(),
+            ["ShowColActions"] = settings.ShowColActions.ToString(),
             ["ExcludedApps"] = JsonSerializer.Serialize(settings.ExcludedApps),
             ["ExcludedCategories"] = JsonSerializer.Serialize(settings.ExcludedCategories),
             ["TelegramEnabled"] = settings.TelegramEnabled.ToString(),

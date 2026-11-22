@@ -233,21 +233,30 @@ public partial class MainWindow : Window
         }
     }
 
-    private void BtnAnalyticsToggle_Click(object sender, RoutedEventArgs e)
+    private void BtnColumnsMenu_Click(object sender, RoutedEventArgs e)
     {
-        if (BorderAnalyticsView.Visibility == Visibility.Visible)
-            ShowMainTableView();
-        else
-            ShowAnalyticsView();
+        if (sender is System.Windows.FrameworkElement element &&
+            Resources["ColumnsContextMenu"] is ContextMenu contextMenu)
+        {
+            contextMenu.PlacementTarget = element;
+            contextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            contextMenu.IsOpen = true;
+        }
     }
 
-    private void BtnSettingsToggle_Click(object sender, RoutedEventArgs e)
+    private void UpdateNavButtonStyles(System.Windows.Controls.Button activeBtn)
     {
-        if (BorderSettingsView.Visibility == Visibility.Visible)
-            ShowMainTableView();
-        else
-            ShowSettingsView();
+        var modernStyle = (Style)FindResource("ModernButton");
+        var outlineStyle = (Style)FindResource("OutlineButton");
+
+        BtnNavNotifications.Style = (activeBtn == BtnNavNotifications) ? modernStyle : outlineStyle;
+        BtnNavAnalytics.Style = (activeBtn == BtnNavAnalytics) ? modernStyle : outlineStyle;
+        BtnNavSettings.Style = (activeBtn == BtnNavSettings) ? modernStyle : outlineStyle;
     }
+
+    private void BtnNavNotifications_Click(object sender, RoutedEventArgs e) => ShowMainTableView();
+    private void BtnNavAnalytics_Click(object sender, RoutedEventArgs e) => ShowAnalyticsView();
+    private void BtnNavSettings_Click(object sender, RoutedEventArgs e) => ShowSettingsView();
 
     private void BtnCloseSettings_Click(object sender, RoutedEventArgs e) => ShowMainTableView();
 
@@ -256,8 +265,7 @@ public partial class MainWindow : Window
         BorderSettingsView.Visibility = Visibility.Collapsed;
         BorderAnalyticsView.Visibility = Visibility.Collapsed;
         GridDashboardView.Visibility = Visibility.Visible;
-        BtnAnalyticsToggle.Content = "📊 Analytics";
-        BtnSettingsToggle.Content = "⚙️ Settings";
+        UpdateNavButtonStyles(BtnNavNotifications);
         _ = MainVm.RefreshAllAsync();
     }
 
@@ -266,8 +274,7 @@ public partial class MainWindow : Window
         GridDashboardView.Visibility = Visibility.Collapsed;
         BorderSettingsView.Visibility = Visibility.Collapsed;
         BorderAnalyticsView.Visibility = Visibility.Visible;
-        BtnAnalyticsToggle.Content = "← Notifications";
-        BtnSettingsToggle.Content = "⚙️ Settings";
+        UpdateNavButtonStyles(BtnNavAnalytics);
         _ = MainVm.RefreshAnalyticsAsync();
     }
 
@@ -276,8 +283,7 @@ public partial class MainWindow : Window
         GridDashboardView.Visibility = Visibility.Collapsed;
         BorderAnalyticsView.Visibility = Visibility.Collapsed;
         BorderSettingsView.Visibility = Visibility.Visible;
-        BtnAnalyticsToggle.Content = "📊 Analytics";
-        BtnSettingsToggle.Content = "← Notifications";
+        UpdateNavButtonStyles(BtnNavSettings);
         _ = SettingsVm.InitializeAsync();
     }
 

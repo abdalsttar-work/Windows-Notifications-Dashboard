@@ -23,6 +23,18 @@ public class AppSettings
     public int RetentionDays { get; set; } = 0;
     public double ZoomScale { get; set; } = 1.0;
 
+    // Column Visibility Preferences
+    public bool ShowColId { get; set; } = true;
+    public bool ShowColSource { get; set; } = true;
+    public bool ShowColCategory { get; set; } = true;
+    public bool ShowColTitle { get; set; } = true;
+    public bool ShowColMessage { get; set; } = true;
+    public bool ShowColReceived { get; set; } = true;
+    public bool ShowColPending { get; set; } = true;
+    public bool ShowColPriority { get; set; } = true;
+    public bool ShowColStatus { get; set; } = true;
+    public bool ShowColActions { get; set; } = true;
+
     // Filters & Exclusions
     public List<string> ExcludedApps { get; set; } = new();
     public List<string> ExcludedCategories { get; set; } = new();

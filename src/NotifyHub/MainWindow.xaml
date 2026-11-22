@@ -22,6 +22,26 @@
         <conv:GreaterThanZeroToVisibilityConverter x:Key="GreaterThanZeroToVis" />
         <conv:SourceRowBackgroundConverter x:Key="SourceRowBg" />
         <conv:SourceAccentBrushConverter x:Key="SourceAccentBrush" />
+        <conv:BindingProxy x:Key="VmProxy" Data="{Binding}" />
+
+        <!-- Shared Column Visibility Context Menu -->
+        <ContextMenu x:Key="ColumnsContextMenu" Background="{DynamicResource SidebarBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}">
+            <MenuItem Header="TABLE COLUMNS" IsEnabled="False" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+            <Separator Background="{DynamicResource CardBorderBrush}" />
+            <MenuItem Header="Record ID (N-1)" IsCheckable="True" IsChecked="{Binding Data.ShowColId, Source={StaticResource VmProxy}, Mode=TwoWay}" StaysOpenOnClick="True" />
+            <MenuItem Header="Source App" IsCheckable="True" IsChecked="{Binding Data.ShowColSource, Source={StaticResource VmProxy}, Mode=TwoWay}" StaysOpenOnClick="True" />
+            <MenuItem Header="Category" IsCheckable="True" IsChecked="{Binding Data.ShowColCategory, Source={StaticResource VmProxy}, Mode=TwoWay}" StaysOpenOnClick="True" />
+            <MenuItem Header="Title / Sender" IsCheckable="True" IsChecked="{Binding Data.ShowColTitle, Source={StaticResource VmProxy}, Mode=TwoWay}" StaysOpenOnClick="True" />
+            <MenuItem Header="Message Content" IsCheckable="True" IsChecked="{Binding Data.ShowColMessage, Source={StaticResource VmProxy}, Mode=TwoWay}" StaysOpenOnClick="True" />
+            <MenuItem Header="Received Time" IsCheckable="True" IsChecked="{Binding Data.ShowColReceived, Source={StaticResource VmProxy}, Mode=TwoWay}" StaysOpenOnClick="True" />
+            <MenuItem Header="Pending Time" IsCheckable="True" IsChecked="{Binding Data.ShowColPending, Source={StaticResource VmProxy}, Mode=TwoWay}" StaysOpenOnClick="True" />
+            <MenuItem Header="Priority" IsCheckable="True" IsChecked="{Binding Data.ShowColPriority, Source={StaticResource VmProxy}, Mode=TwoWay}" StaysOpenOnClick="True" />
+            <MenuItem Header="Status" IsCheckable="True" IsChecked="{Binding Data.ShowColStatus, Source={StaticResource VmProxy}, Mode=TwoWay}" StaysOpenOnClick="True" />
+            <MenuItem Header="Actions" IsCheckable="True" IsChecked="{Binding Data.ShowColActions, Source={StaticResource VmProxy}, Mode=TwoWay}" StaysOpenOnClick="True" />
+            <Separator Background="{DynamicResource CardBorderBrush}" />
+            <MenuItem Header="✓ Show All Columns" Command="{Binding Data.ShowAllColumnsCommand, Source={StaticResource VmProxy}}" />
+            <MenuItem Header="↺ Reset Columns" Command="{Binding Data.ResetColumnsCommand, Source={StaticResource VmProxy}}" />
+        </ContextMenu>
     </Window.Resources>
 
     <Grid x:Name="RootLayoutGrid">
@@ -54,12 +74,33 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Live Status Badge -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Border CornerRadius="12" Padding="12,5"
+                <!-- Navigation Tabs: Dedicated [ 🔔 Notifications ] [ 📊 Analytics ] [ ⚙️ Settings ] -->
+                <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                        BorderThickness="1" CornerRadius="10" Padding="3">
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="BtnNavNotifications" Content="🔔 Notifications"
+                                Style="{DynamicResource ModernButton}" Click="BtnNavNotifications_Click"
+                                Padding="14,6" Margin="0,0,4,0" FontWeight="SemiBold" FontSize="12.5"
+                                ToolTip="View Notifications Table &amp; Details" />
+                        <Button x:Name="BtnNavAnalytics" Content="📊 Analytics"
+                                Style="{DynamicResource OutlineButton}" Click="BtnNavAnalytics_Click"
+                                Padding="14,6" Margin="0,0,4,0" FontWeight="SemiBold" FontSize="12.5"
+                                ToolTip="View Advanced Notification Charts &amp; Trends" />
+                        <Button x:Name="BtnNavSettings" Content="⚙️ Settings"
+                                Style="{DynamicResource OutlineButton}" Click="BtnNavSettings_Click"
+                                Padding="14,6" FontWeight="SemiBold" FontSize="12.5"
+                                ToolTip="Configure App, Forwarding &amp; Backup Settings" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Action Controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Live Status Badge -->
+                    <Border CornerRadius="8" Padding="10,5" Margin="0,0,8,0"
                             Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="8" Height="8" Margin="0,0,8,0">
+                            <Ellipse Width="8" Height="8" Margin="0,0,6,0">
                                 <Ellipse.Style>
                                     <Style TargetType="Ellipse">
                                         <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
@@ -71,30 +112,27 @@
                                     </Style>
                                 </Ellipse.Style>
                             </Ellipse>
-                            <TextBlock Text="{Binding MonitoringStatusText}" FontSize="12" FontWeight="SemiBold"
+                            <TextBlock Text="{Binding MonitoringStatusText}" FontSize="11.5" FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextSecondaryBrush}" />
                         </StackPanel>
                     </Border>
-                    <Button Content="⚙️ Open Windows Settings" Style="{DynamicResource OutlineButton}"
+                    <Button Content="⚙️ Permission" Style="{DynamicResource OutlineButton}"
                             Command="{Binding OpenSettingsPermissionCommand}"
                             Visibility="{Binding IsPermissionNeeded, Converter={StaticResource BoolToVis}}"
-                            Margin="10,0,0,0" Padding="8,4" Foreground="{DynamicResource WarningBrush}"
-                            BorderBrush="{DynamicResource WarningBrush}" ToolTip="Open Windows Settings > Privacy &amp; security > Notifications to grant access" />
-                </StackPanel>
+                            Margin="0,0,8,0" Padding="8,4" Foreground="{DynamicResource WarningBrush}"
+                            BorderBrush="{DynamicResource WarningBrush}" ToolTip="Grant notification permission in Windows Settings" />
 
-                <!-- Action Controls -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="Sync Now" Style="{DynamicResource OutlineButton}"
+                    <Button Content="Sync" Style="{DynamicResource OutlineButton}"
                             Command="{Binding TriggerManualSyncCommand}" Margin="0,0,8,0" ToolTip="Query latest notifications from Windows" />
                     
                     <Button Command="{Binding TogglePauseMonitoringCommand}" Margin="0,0,8,0"
                             x:Name="BtnPauseToggle">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource OutlineButton}">
-                                <Setter Property="Content" Value="Pause Monitoring" />
+                                <Setter Property="Content" Value="Pause" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsPaused}" Value="True">
-                                        <Setter Property="Content" Value="Resume Monitoring" />
+                                        <Setter Property="Content" Value="Resume" />
                                         <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -105,11 +143,8 @@
                     <Button Content="Refresh" Style="{DynamicResource OutlineButton}"
                             Command="{Binding RefreshCommand}" Margin="0,0,8,0" />
 
-                    <Button x:Name="BtnAnalyticsToggle" Content="📊 Analytics" Style="{DynamicResource OutlineButton}"
-                            Click="BtnAnalyticsToggle_Click" Margin="0,0,8,0" ToolTip="Open Advanced Analytics &amp; Charts Dashboard" />
-
                     <!-- Zoom Controls (Ctrl + / Ctrl - / Ctrl 0 / Ctrl+Wheel) -->
-                    <Border CornerRadius="6" Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Margin="0,0,8,0" Padding="3,2">
+                    <Border CornerRadius="6" Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Margin="0" Padding="3,2">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Button Content="−" Style="{DynamicResource OutlineButton}" Command="{Binding ZoomOutCommand}"
                                     BorderThickness="0" Padding="5,1" Margin="0" FontSize="13" FontWeight="Bold"
@@ -125,8 +160,6 @@
                                     ToolTip="Zoom In (Ctrl +)" />
                         </StackPanel>
                     </Border>
-
-                    <Button x:Name="BtnSettingsToggle" Content="⚙️ Settings" Style="{DynamicResource ModernButton}" Click="BtnSettingsToggle_Click" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -284,6 +317,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="7" Orientation="Horizontal">
+                                <Button Content="👁️ Columns ▾" Style="{DynamicResource OutlineButton}" Click="BtnColumnsMenu_Click" Margin="0,0,6,0" Padding="8,4" ToolTip="Show or hide table columns" />
                                 <Button Content="📥 CSV" Style="{DynamicResource OutlineButton}" Command="{Binding ExportCsvCommand}" Margin="0,0,6,0" Padding="8,4" />
                                 <Button Content="📊 Excel" Style="{DynamicResource OutlineButton}" Command="{Binding ExportExcelCommand}" Padding="8,4" />
                             </StackPanel>
@@ -402,6 +436,7 @@
                                 <Setter Property="Padding" Value="10,8" />
                                 <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
                                 <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                <Setter Property="ContextMenu" Value="{StaticResource ColumnsContextMenu}" />
                             </Style>
                         </DataGrid.ColumnHeaderStyle>
 
@@ -417,7 +452,8 @@
                             </DataGridTemplateColumn>
 
                             <!-- Record Key (N-1, N-2, ...) -->
-                            <DataGridTemplateColumn Header="ID" Width="70" SortMemberPath="Id">
+                            <DataGridTemplateColumn Header="ID" Width="70" SortMemberPath="Id"
+                                                    Visibility="{Binding Data.ShowColId, Source={StaticResource VmProxy}, Converter={StaticResource BoolToVis}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBox Style="{DynamicResource SelectableTextStyle}" Text="{Binding DisplayId, Mode=OneWay}"
@@ -427,7 +463,8 @@
                             </DataGridTemplateColumn>
 
                             <!-- Source App with matching source accent badge -->
-                            <DataGridTemplateColumn Header="Source" Width="145">
+                            <DataGridTemplateColumn Header="Source" Width="145"
+                                                    Visibility="{Binding Data.ShowColSource, Source={StaticResource VmProxy}, Converter={StaticResource BoolToVis}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border Background="{Binding AppName, Converter={StaticResource SourceAccentBrush}, ConverterParameter=75}"
@@ -440,7 +477,8 @@
                             </DataGridTemplateColumn>
 
                             <!-- Category -->
-                            <DataGridTemplateColumn Header="Category" Width="150">
+                            <DataGridTemplateColumn Header="Category" Width="150"
+                                                    Visibility="{Binding Data.ShowColCategory, Source={StaticResource VmProxy}, Converter={StaticResource BoolToVis}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBox Style="{DynamicResource SelectableTextStyle}" Text="{Binding Category, Mode=OneWay}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
@@ -450,7 +488,8 @@
                             </DataGridTemplateColumn>
 
                             <!-- Notification Title -->
-                            <DataGridTemplateColumn Header="Title / Sender" Width="200">
+                            <DataGridTemplateColumn Header="Title / Sender" Width="200"
+                                                    Visibility="{Binding Data.ShowColTitle, Source={StaticResource VmProxy}, Converter={StaticResource BoolToVis}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBox Style="{DynamicResource SelectableTextStyle}" Text="{Binding Title, Mode=OneWay}" FontWeight="SemiBold" FontSize="12.5"
@@ -460,7 +499,8 @@
                             </DataGridTemplateColumn>
 
                             <!-- Notification Content -->
-                            <DataGridTemplateColumn Header="Message Content" Width="*">
+                            <DataGridTemplateColumn Header="Message Content" Width="*"
+                                                    Visibility="{Binding Data.ShowColMessage, Source={StaticResource VmProxy}, Converter={StaticResource BoolToVis}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBox Style="{DynamicResource SelectableTextStyle}" Text="{Binding Body, Mode=OneWay}" FontSize="12"
@@ -470,7 +510,8 @@
                             </DataGridTemplateColumn>
 
                             <!-- Received Time -->
-                            <DataGridTemplateColumn Header="Received" Width="135">
+                            <DataGridTemplateColumn Header="Received" Width="135"
+                                                    Visibility="{Binding Data.ShowColReceived, Source={StaticResource VmProxy}, Converter={StaticResource BoolToVis}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBox Style="{DynamicResource SelectableTextStyle}" Text="{Binding FormattedReceivedAt, Mode=OneWay}" FontSize="11.5"
@@ -480,7 +521,8 @@
                             </DataGridTemplateColumn>
 
                             <!-- Pending Duration -->
-                            <DataGridTemplateColumn Header="Pending" Width="85">
+                            <DataGridTemplateColumn Header="Pending" Width="85"
+                                                    Visibility="{Binding Data.ShowColPending, Source={StaticResource VmProxy}, Converter={StaticResource BoolToVis}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBox Style="{DynamicResource SelectableTextStyle}" Text="{Binding PendingDurationText, Mode=OneWay}" FontSize="11.5" FontWeight="SemiBold"
@@ -490,7 +532,8 @@
                             </DataGridTemplateColumn>
 
                             <!-- Priority Badge -->
-                            <DataGridTemplateColumn Header="Priority" Width="80">
+                            <DataGridTemplateColumn Header="Priority" Width="80"
+                                                    Visibility="{Binding Data.ShowColPriority, Source={StaticResource VmProxy}, Converter={StaticResource BoolToVis}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBox Style="{DynamicResource SelectableTextStyle}" Text="{Binding Priority, Mode=OneWay}" FontSize="11.5" FontWeight="Bold"
@@ -500,7 +543,8 @@
                             </DataGridTemplateColumn>
 
                             <!-- Status Badge -->
-                            <DataGridTemplateColumn Header="Status" Width="95">
+                            <DataGridTemplateColumn Header="Status" Width="95"
+                                                    Visibility="{Binding Data.ShowColStatus, Source={StaticResource VmProxy}, Converter={StaticResource BoolToVis}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border CornerRadius="10" Padding="8,2" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -513,7 +557,8 @@
                             </DataGridTemplateColumn>
 
                             <!-- Quick Actions (Open & Done) -->
-                            <DataGridTemplateColumn Header="Actions" Width="145">
+                            <DataGridTemplateColumn Header="Actions" Width="145"
+                                                    Visibility="{Binding Data.ShowColActions, Source={StaticResource VmProxy}, Converter={StaticResource BoolToVis}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
