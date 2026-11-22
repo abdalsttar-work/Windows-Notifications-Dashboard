@@ -552,6 +552,31 @@ class Program
             Assert(!WindowsNotificationListenerService.IsAppExcluded("Slack", "Slack", resumed.ExcludedApps), "Re-checking source must resume recording");
         });
 
+        await RunTest("18. Pagination (10, 20, 50, All) & Record Display IDs", async () =>
+        {
+            var filter = new NotificationFilter();
+            int total = await dbService.GetNotificationCountAsync(filter);
+            Assert(total > 0, "Database must have notifications for pagination testing");
+
+            // Page size 10
+            var p10 = await dbService.GetNotificationsAsync(filter, 10, 0);
+            Assert(p10.Count <= 10 && p10.Count > 0, "Page size 10 must return at most 10 items");
+            Assert(p10.All(n => n.DisplayId.StartsWith("N-")), "All records must have valid N-{Id} DisplayId");
+
+            // Page size 20
+            var p20 = await dbService.GetNotificationsAsync(filter, 20, 0);
+            Assert(p20.Count <= 20, "Page size 20 must return at most 20 items");
+
+            // Page size All (limit = -1)
+            var pAll = await dbService.GetNotificationsAsync(filter, -1, 0);
+            Assert(pAll.Count == total, "Limit -1 must return all notifications");
+
+            // Search by DisplayId shortcut (e.g. N-1)
+            var firstItem = pAll.First();
+            var searchResult = await dbService.GetNotificationsAsync(new NotificationFilter { SearchText = firstItem.DisplayId }, 10, 0);
+            Assert(searchResult.Count == 1 && searchResult[0].Id == firstItem.Id, "Search by DisplayId must locate exact record");
+        });
+
         // Summary
         Console.WriteLine("\n======================================================================");
         Console.WriteLine($"TEST RESULTS SUMMARY: {_passedTests} PASSED, {_failedTests} FAILED");

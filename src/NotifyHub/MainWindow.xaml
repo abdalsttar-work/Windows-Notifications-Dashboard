@@ -197,7 +197,7 @@
                     <Border Grid.Row="0" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="0,0,0,1" Padding="14,10">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="260" />
+                                <ColumnDefinition Width="220" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
@@ -236,6 +236,30 @@
                                 <ComboBox Width="100" ItemsSource="{Binding DateFilterList}" SelectedItem="{Binding SelectedDateFilter}" />
                             </StackPanel>
 
+                            <!-- Pagination & Page Size Toolbar (Options: 10, 20, 50, All) -->
+                            <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0">
+                                <TextBlock Text="Show:" VerticalAlignment="Center" Margin="0,0,4,0" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" />
+                                <ComboBox Width="72" ItemsSource="{Binding PageSizeList}" SelectedItem="{Binding SelectedPageSize}" Margin="0,0,8,0"
+                                          ToolTip="Select notifications per page (10, 20, 50, or All)" />
+
+                                <Button Content="⏮" Style="{DynamicResource OutlineButton}" Command="{Binding FirstPageCommand}"
+                                        IsEnabled="{Binding CanGoPrevious}" Margin="0,0,3,0" Padding="6,2" ToolTip="First Page"
+                                        Visibility="{Binding IsPaginationActive, Converter={StaticResource BoolToVis}}" />
+                                <Button Content="◀" Style="{DynamicResource OutlineButton}" Command="{Binding PreviousPageCommand}"
+                                        IsEnabled="{Binding CanGoPrevious}" Margin="0,0,6,0" Padding="7,2" ToolTip="Previous Page"
+                                        Visibility="{Binding IsPaginationActive, Converter={StaticResource BoolToVis}}" />
+
+                                <TextBlock Text="{Binding PageDisplaySummary}" VerticalAlignment="Center" Margin="0,0,6,0"
+                                           Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" FontWeight="SemiBold" />
+
+                                <Button Content="▶" Style="{DynamicResource OutlineButton}" Command="{Binding NextPageCommand}"
+                                        IsEnabled="{Binding CanGoNext}" Margin="0,0,3,0" Padding="7,2" ToolTip="Next Page"
+                                        Visibility="{Binding IsPaginationActive, Converter={StaticResource BoolToVis}}" />
+                                <Button Content="⏭" Style="{DynamicResource OutlineButton}" Command="{Binding LastPageCommand}"
+                                        IsEnabled="{Binding CanGoNext}" Padding="6,2" ToolTip="Last Page"
+                                        Visibility="{Binding IsPaginationActive, Converter={StaticResource BoolToVis}}" />
+                            </StackPanel>
+
                             <StackPanel Grid.Column="7" Orientation="Horizontal">
                                 <Button Content="📥 CSV" Style="{DynamicResource OutlineButton}" Command="{Binding ExportCsvCommand}" Margin="0,0,6,0" Padding="8,4" />
                                 <Button Content="📊 Excel" Style="{DynamicResource OutlineButton}" Command="{Binding ExportExcelCommand}" Padding="8,4" />
@@ -267,7 +291,11 @@
                               Background="Transparent" BorderThickness="0"
                               Foreground="{DynamicResource TextPrimaryBrush}"
                               HorizontalGridLinesBrush="{DynamicResource CardBorderBrush}"
-                              SelectionMode="Single" SelectionUnit="FullRow">
+                              SelectionMode="Single" SelectionUnit="FullRow"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling"
+                              VirtualizingPanel.ScrollUnit="Pixel"
+                              ScrollViewer.CanContentScroll="True">
 
                         <DataGrid.RowStyle>
                             <Style TargetType="DataGridRow">

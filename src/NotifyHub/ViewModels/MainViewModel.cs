@@ -64,49 +64,124 @@ public class MainViewModel : ViewModelBase
     public string SearchText
     {
         get => _searchText;
-        set { if (SetProperty(ref _searchText, value)) _ = RefreshNotificationsAsync(); }
+        set { if (SetProperty(ref _searchText, value)) { _currentPage = 1; _ = RefreshNotificationsAsync(); } }
     }
 
     private string _selectedApp = "All";
     public string SelectedApp
     {
         get => _selectedApp;
-        set { if (SetProperty(ref _selectedApp, value)) _ = RefreshNotificationsAsync(); }
+        set { if (SetProperty(ref _selectedApp, value)) { _currentPage = 1; _ = RefreshNotificationsAsync(); } }
     }
 
     private string _selectedCategory = "All";
     public string SelectedCategory
     {
         get => _selectedCategory;
-        set { if (SetProperty(ref _selectedCategory, value)) _ = RefreshNotificationsAsync(); }
+        set { if (SetProperty(ref _selectedCategory, value)) { _currentPage = 1; _ = RefreshNotificationsAsync(); } }
     }
 
     private string _selectedStatus = "All";
     public string SelectedStatus
     {
         get => _selectedStatus;
-        set { if (SetProperty(ref _selectedStatus, value)) _ = RefreshNotificationsAsync(); }
+        set { if (SetProperty(ref _selectedStatus, value)) { _currentPage = 1; _ = RefreshNotificationsAsync(); } }
     }
 
     private string _selectedPriority = "All";
     public string SelectedPriority
     {
         get => _selectedPriority;
-        set { if (SetProperty(ref _selectedPriority, value)) _ = RefreshNotificationsAsync(); }
+        set { if (SetProperty(ref _selectedPriority, value)) { _currentPage = 1; _ = RefreshNotificationsAsync(); } }
     }
 
     private string _selectedDateFilter = "All Time";
     public string SelectedDateFilter
     {
         get => _selectedDateFilter;
-        set { if (SetProperty(ref _selectedDateFilter, value)) _ = RefreshNotificationsAsync(); }
+        set { if (SetProperty(ref _selectedDateFilter, value)) { _currentPage = 1; _ = RefreshNotificationsAsync(); } }
     }
 
     private bool _sortDescending = true;
     public bool SortDescending
     {
         get => _sortDescending;
-        set { if (SetProperty(ref _sortDescending, value)) _ = RefreshNotificationsAsync(); }
+        set { if (SetProperty(ref _sortDescending, value)) { _currentPage = 1; _ = RefreshNotificationsAsync(); } }
+    }
+
+    // Pagination Properties (10, 20, 50, All)
+    public List<string> PageSizeList { get; } = new() { "10", "20", "50", "All" };
+
+    private string _selectedPageSize = "50";
+    public string SelectedPageSize
+    {
+        get => _selectedPageSize;
+        set
+        {
+            if (SetProperty(ref _selectedPageSize, value))
+            {
+                _currentPage = 1;
+                _ = RefreshNotificationsAsync();
+            }
+        }
+    }
+
+    private int _currentPage = 1;
+    public int CurrentPage
+    {
+        get => _currentPage;
+        set
+        {
+            if (SetProperty(ref _currentPage, value))
+            {
+                OnPropertyChanged(nameof(CanGoPrevious));
+                OnPropertyChanged(nameof(CanGoNext));
+                OnPropertyChanged(nameof(PageDisplaySummary));
+                _ = RefreshNotificationsAsync();
+            }
+        }
+    }
+
+    private int _totalPages = 1;
+    public int TotalPages
+    {
+        get => _totalPages;
+        set
+        {
+            if (SetProperty(ref _totalPages, value))
+            {
+                OnPropertyChanged(nameof(CanGoPrevious));
+                OnPropertyChanged(nameof(CanGoNext));
+                OnPropertyChanged(nameof(PageDisplaySummary));
+            }
+        }
+    }
+
+    private int _totalNotificationCount;
+    public int TotalNotificationCount
+    {
+        get => _totalNotificationCount;
+        set
+        {
+            if (SetProperty(ref _totalNotificationCount, value))
+            {
+                OnPropertyChanged(nameof(PageDisplaySummary));
+            }
+        }
+    }
+
+    public bool CanGoPrevious => CurrentPage > 1 && SelectedPageSize != "All";
+    public bool CanGoNext => CurrentPage < TotalPages && SelectedPageSize != "All";
+    public bool IsPaginationActive => SelectedPageSize != "All";
+
+    public string PageDisplaySummary
+    {
+        get
+        {
+            if (SelectedPageSize == "All")
+                return $"All ({TotalNotificationCount})";
+            return $"Page {CurrentPage} of {Math.Max(1, TotalPages)} ({TotalNotificationCount} total)";
+        }
     }
 
     // Selected Notification & Details Panel
@@ -182,6 +257,11 @@ public class MainViewModel : ViewModelBase
     public ICommand CopyNotificationBodyCommand { get; }
     public ICommand MuteSourceCommand { get; }
 
+    public ICommand PreviousPageCommand { get; }
+    public ICommand NextPageCommand { get; }
+    public ICommand FirstPageCommand { get; }
+    public ICommand LastPageCommand { get; }
+
     public MainViewModel(
         IDatabaseService databaseService,
         INotificationListenerService listenerService,
@@ -250,6 +330,11 @@ public class MainViewModel : ViewModelBase
             if (item != null) await StopRecordingSourceAsync(item.AppName);
         });
 
+        PreviousPageCommand = new RelayCommand(() => { if (CanGoPrevious) CurrentPage--; });
+        NextPageCommand = new RelayCommand(() => { if (CanGoNext) CurrentPage++; });
+        FirstPageCommand = new RelayCommand(() => { if (CurrentPage > 1) CurrentPage = 1; });
+        LastPageCommand = new RelayCommand(() => { if (CurrentPage < TotalPages) CurrentPage = TotalPages; });
+
         _listenerService.NotificationCaptured += ListenerService_NotificationCaptured;
         _listenerService.MonitoringStatusChanged += ListenerService_MonitoringStatusChanged;
     }
@@ -314,7 +399,40 @@ public class MainViewModel : ViewModelBase
     public async Task RefreshNotificationsAsync()
     {
         var filter = BuildCurrentFilter();
-        var items = await _databaseService.GetNotificationsAsync(filter, 250, 0);
+        TotalNotificationCount = await _databaseService.GetNotificationCountAsync(filter);
+
+        int limit;
+        int offset;
+        if (SelectedPageSize == "All")
+        {
+            limit = -1;
+            offset = 0;
+            TotalPages = 1;
+        }
+        else
+        {
+            int pageSize = int.TryParse(SelectedPageSize, out int p) ? p : 50;
+            TotalPages = Math.Max(1, (int)Math.Ceiling((double)TotalNotificationCount / pageSize));
+            if (_currentPage > TotalPages)
+            {
+                _currentPage = TotalPages;
+                OnPropertyChanged(nameof(CurrentPage));
+            }
+            if (_currentPage < 1)
+            {
+                _currentPage = 1;
+                OnPropertyChanged(nameof(CurrentPage));
+            }
+            limit = pageSize;
+            offset = (_currentPage - 1) * pageSize;
+        }
+
+        OnPropertyChanged(nameof(CanGoPrevious));
+        OnPropertyChanged(nameof(CanGoNext));
+        OnPropertyChanged(nameof(PageDisplaySummary));
+        OnPropertyChanged(nameof(IsPaginationActive));
+
+        var items = await _databaseService.GetNotificationsAsync(filter, limit, offset);
 
         Notifications.Clear();
         foreach (var item in items)

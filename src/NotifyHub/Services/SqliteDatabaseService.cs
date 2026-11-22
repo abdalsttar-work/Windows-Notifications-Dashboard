@@ -438,8 +438,8 @@ public class SqliteDatabaseService : IDatabaseService
         {
             cmd.Parameters.Add(p);
         }
-        cmd.Parameters.AddWithValue("@Limit", limit);
-        cmd.Parameters.AddWithValue("@Offset", offset);
+        cmd.Parameters.AddWithValue("@Limit", limit <= 0 || limit == int.MaxValue ? -1 : limit);
+        cmd.Parameters.AddWithValue("@Offset", Math.Max(0, offset));
 
         var list = new List<NotificationItem>();
         using var reader = await cmd.ExecuteReaderAsync();
